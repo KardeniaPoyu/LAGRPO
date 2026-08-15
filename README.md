@@ -140,8 +140,8 @@ Ablation configurations:
 ### 1. Requirements & Setup
 
 ```bash
-git clone https://github.com/KardeniaPoyu/SLM-RL-Comparation.git
-cd SLM-RL-Comparation
+git clone https://github.com/KardeniaPoyu/LAGRPO.git
+cd LAGRPO
 pip install -r requirements.txt
 ```
 
@@ -209,7 +209,7 @@ python generate_lagrpo_plots.py
   year = {2026},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{https://github.com/KardeniaPoyu/SLM-RL-Comparation}}
+  howpublished = {\url{https://github.com/KardeniaPoyu/LAGRPO}}
 }
 ```
 
