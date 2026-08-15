@@ -22,6 +22,8 @@ saved_models/
 # Logs and outputs
 logs/
 *.log
+*.txt
+!requirements.txt
 
 # IDEs and editors
 .vscode/

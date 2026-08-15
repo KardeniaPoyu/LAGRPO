@@ -1,0 +1,143 @@
+% !TeX program = xelatex
+\documentclass[tikz,border=20pt]{standalone}
+
+% 中文字体支持
+\usepackage[UTF8]{ctex}
+
+% 顶级学术期刊标准字体 (Times Roman 风格)
+\usepackage{newtxtext, newtxmath}
+\usepackage{amsmath}
+
+% TikZ 核心库 (移除了极易导致超时的 fit 和 backgrounds)
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, decorations.pathreplacing}
+
+% ================= 定义高级科研配色 (莫兰迪低饱和度) =================
+\definecolor{SystemBlue}{HTML}{1A5276}   
+\definecolor{SystemFill}{HTML}{EBF5FB}   
+\definecolor{PenaltyRed}{HTML}{922B21}   
+\definecolor{PenaltyFill}{HTML}{FDEDEC}  
+\definecolor{RewardGreen}{HTML}{196F3D}  
+\definecolor{RewardFill}{HTML}{E9F7EF}   
+\definecolor{AnnealOrange}{HTML}{D35400} 
+\definecolor{AnnealFill}{HTML}{FEF5E7}   
+\definecolor{BoxBorder}{HTML}{95A5A6}    
+\definecolor{LineGray}{HTML}{5D6D7E}     
+
+\begin{document}
+\begin{tikzpicture}[
+    % 全局样式定义 (无空行)
+    baseNode/.style={align=center, rounded corners=3pt, thick, inner sep=6pt, font=\small},
+    moduleNode/.style={baseNode, draw=SystemBlue, fill=SystemFill, text width=6cm, minimum height=1.2cm},
+    penaltyNode/.style={baseNode, draw=PenaltyRed, fill=PenaltyFill, text width=3cm, font=\footnotesize},
+    rewardNode/.style={baseNode, draw=RewardGreen, fill=RewardFill, text width=3cm, font=\footnotesize},
+    mathNode/.style={baseNode, draw=AnnealOrange, fill=AnnealFill, text width=11.5cm, inner sep=10pt, font=\footnotesize},
+    mainArrow/.style={->, >={Stealth[scale=1.1]}, thick, draw=LineGray},
+    rejectArrow/.style={->, >={Stealth[scale=1.1]}, dashed, thick, draw=PenaltyRed},
+    acceptArrow/.style={->, >={Stealth[scale=1.1]}, thick, draw=RewardGreen},
+    labelNode/.style={font=\bfseries\small, text=LineGray, anchor=north west}
+]
+
+% =========================================================
+% 0. 绘制背景区域 (手动绝对坐标，0 计算量，杜绝超时)
+% =========================================================
+% 上方：防御层背景框
+\filldraw[fill=black!2, draw=BoxBorder, dashed, thick, rounded corners=5pt] (-7.5, 1.2) rectangle (10.8, -5.8);
+\node[labelNode] at (-7.5, 1.2) {约束层};
+
+% 下方：优化层背景框
+\filldraw[fill=black!2, draw=BoxBorder, dashed, thick, rounded corners=5pt] (-7.5, -6.5) rectangle (10.8, -15.0);
+\node[labelNode] at (-7.5, -6.5) {引导层};
+
+
+% =========================================================
+% 1. 顶层：格式护栏与非规范策略掩码
+% =========================================================
+\node[moduleNode] (Phase1) at (1.5, 0) {
+    \textbf{格式护栏与动作空间掩码 $R_{format}$} \\[1mm]
+    \normalfont \scriptsize 标签闭合性、字符白名单及多标签混入检测
+};
+
+\node[penaltyNode] (P1_Reject) at (8.5, 0) {
+    \textbf{严重违规 / 直接截断} \\[0.5mm]
+    \normalfont 强行阻断 ($R = -1.0$)
+};
+
+\draw[rejectArrow] (Phase1.east) -- node[above, font=\scriptsize, text=PenaltyRed] {格式崩溃 / 标签非法} (P1_Reject.west);
+
+
+% =========================================================
+% 2. 中层：轻量级过程验证与幻觉查杀
+% =========================================================
+\node[moduleNode] (Phase2) at (1.5, -3.5) {
+    \textbf{过程一致性验证与幻觉惩罚 $R_{step}$} \\[1mm]
+    \normalfont \scriptsize 思维链状态追踪，验证 A=B 是否存在幻觉捏造
+};
+
+\node[penaltyNode] (P2_Reject) at (8.5, -2.5) {
+    \textbf{逻辑作弊 / 幻觉发生} \\[0.5mm]
+    \normalfont 步骤判负 ($R_{step} = -1.0$)
+};
+
+\node[rewardNode] (P2_Accept) at (8.5, -4.5) {
+    \textbf{逻辑自洽 / 合法推导} \\[0.5mm]
+    \normalfont 每步奖励 ($+0.1$)
+};
+
+\draw[mainArrow] (Phase1.south) -- node[right, font=\scriptsize] {通过格式校验} (Phase2.north);
+\draw[rejectArrow] (Phase2.east) |- node[pos=0.7, above, font=\scriptsize, text=PenaltyRed] {发生捏造 (A $\neq$ B)} (P2_Reject.west);
+\draw[acceptArrow] (Phase2.east) |- node[pos=0.7, below, font=\scriptsize, text=RewardGreen] {自洽合法推演} (P2_Accept.west);
+
+
+% =========================================================
+% 3. 底层：势能重塑与平滑奖励退火
+% =========================================================
+\node[moduleNode] (Phase3) at (1.5, -7.8) {
+    \textbf{终态验证与平滑奖励退火 $R_{final}$} \\[1mm]
+    \normalfont \scriptsize 解析尾部表达式，验证目标值偏差 $dist$
+};
+
+\draw[mainArrow] (Phase2.south) -- node[pos=0.35, right, font=\scriptsize] {到达轨迹终态} (Phase3.north);
+
+% 退火机制公式框 (使用绝对宽度 5.2cm，避免 textwidth 引发的解析死循环)
+\node[mathNode] (Annealing) at (1.5, -11.6) {
+    \centering \textbf{势能重塑与双相平滑退火机制 (Smooth Reward Annealing)} \\[3mm]
+    
+    \begin{minipage}{5.2cm}
+        \centering
+        \textcolor{SystemBlue}{\textbf{初期：平滑势能面 (Dense Reward)}} \\[1mm]
+        提供数值距离牵引，缓解奖励稀疏\\
+        $R^{dense} = 0.8 \cdot \exp\left(-\frac{dist}{10.0}\right)$
+    \end{minipage}
+    \hfill
+    \vrule
+    \hfill
+    \begin{minipage}{5.2cm}
+        \centering
+        \textcolor{RewardGreen}{\textbf{后期：逻辑真值判定 (Binary Reward)}} \\[1mm]
+        抑制奖励欺骗，强制向真值收敛\\
+        $R^{binary} \in \{0, +4.0\}$
+    \end{minipage}
+    
+    \vspace{4mm} \hrule \vspace{3mm}
+    
+    \centering
+    \textbf{动态插值消除梯度冲击 (消除非连续跃变):} \\[2mm]
+    $R_{final} = (1 - \alpha) \cdot R^{dense} + \alpha \cdot R^{binary}$ \\[2mm]
+    $\alpha = \sigma\left(\frac{\bar{s} - \tau}{T}\right) = \frac{1}{1 + e^{-(\bar{s} - \tau) / T}}$ \\[1mm]
+    (基于 EMA 成功率 $\bar{s}$ 的自适应退火系数 $\alpha$)
+};
+
+\draw[mainArrow] (Phase3.south) -- node[right, font=\scriptsize] {输入最终结果 $v$} (Annealing.north);
+
+
+% =========================================================
+% 4. 左侧宏观大括号
+% =========================================================
+\draw[decorate, decoration={brace, amplitude=6pt, mirror}, thick, LineGray]
+    (-7.8, 0.8) -- (-7.8, -14.5) node[midway, left=10pt, align=center, font=\small\bfseries, text=SystemBlue, text width=2.5cm] {
+        LAGRPO\\复合多阶段\\奖励函数\\[2mm]
+        \normalfont\scriptsize $R_{total} = R_{format}$\\$+ R_{step} + R_{final}$
+    };
+
+\end{tikzpicture}
+\end{document}

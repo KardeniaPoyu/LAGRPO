@@ -27,9 +27,10 @@ def default_python_exe() -> str:
     if env and Path(env).exists():
         return env
     for candidate in (
-        Path(r"D:\venvs\SLM-RL-Comparation\Scripts\python.exe"),
         REPO_ROOT / ".venv_reasoning" / "Scripts" / "python.exe",
         REPO_ROOT / ".venv" / "Scripts" / "python.exe",
+        REPO_ROOT / ".venv" / "bin" / "python",
+        Path.home() / ".venvs" / "SLM-RL-Comparation" / "Scripts" / "python.exe",
     ):
         if candidate.exists():
             return str(candidate)
@@ -65,10 +66,11 @@ def main():
     p.add_argument("--dry-run", action="store_true")
     args = p.parse_args()
 
-    # 未显式设置时，将 HuggingFace 缓存放到 D 盘，避免系统盘损坏的 safetensors 导致加载失败
+    # 未显式设置时，默认使用标准的 HuggingFace 缓存路径
     if not os.environ.get("HF_HOME"):
-        os.environ["HF_HOME"] = r"D:\hf_cache"
-        Path(os.environ["HF_HOME"]).mkdir(parents=True, exist_ok=True)
+        hf_cache = Path.home() / ".cache" / "huggingface"
+        hf_cache.mkdir(parents=True, exist_ok=True)
+        os.environ["HF_HOME"] = str(hf_cache)
 
     py = default_python_exe()
     print(f"Python: {py}")
