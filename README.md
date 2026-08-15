@@ -155,7 +155,7 @@ python data_gen_multi.py
 python train_sft.py --model-name Qwen/Qwen2.5-0.5B-Instruct --output-dir saved_models/sft_final
 ```
 
-### 3. Training & Ablation Execution
+### 3. Training & Automated Pipeline Execution
 
 ```bash
 # Train Vanilla GRPO (B0)
@@ -164,18 +164,30 @@ python train_grpo.py --ablation B0 --group-size 8 --max-steps 200
 # Train Full LAGRPO (B4)
 python train_grpo.py --ablation B4 --group-size 8 --max-steps 200
 
-# Execute full automated ablation suite (B0 to B4)
-python run_paper_ablations.py --max-steps 200 --group-size 32
+# Execute full automated paper ablation pipeline (B0 to B4)
+python scripts/run_paper_ablations.py --max-steps 200 --group-size 32
 ```
 
-### 4. Evaluation & Visualization
+### 4. Multi-Seed Replication Pipeline (Statistical Significance)
+
+To reproduce NeurIPS/ICLR-style benchmark curves across multiple random seeds with confidence intervals:
+
+```bash
+# Automated multi-seed pipeline (Seeds: 42, 2026, 999)
+bash scripts/run_multi_seed.sh
+
+# Run complete integrated suite
+bash scripts/run_integrated_suite.sh
+```
+
+### 5. Evaluation & Visualization
 
 ```bash
 # Evaluate trained checkpoints on test set
 python evaluate.py --models saved_models/ablations/grpo_b4_G32_final
 
-# Generate paper figures
-python generate_lagrpo_plots.py
+# Generate academic figures (in plots/)
+python scripts/archive/generate_lagrpo_plots.py
 ```
 
 ---
@@ -190,10 +202,14 @@ python generate_lagrpo_plots.py
 ├── env.py                     # Task environment & AST process verification sandbox
 ├── model_utils.py             # Model initializations and LoRA configurations
 ├── evaluate.py                # Standalone test-set evaluation pipeline
-├── run_paper_ablations.py     # Automated ablation suite runner (B0-B4)
-├── analyze_LAGRPO.py          # Statistical hypothesis testing & analysis
 ├── data_gen_multi.py          # Dataset generation utilities
-├── plots/                     # Academic figures and visualization outputs
+├── scripts/                   # Automated pipelines & multi-seed verification
+│   ├── run_paper_ablations.py # Paper ablation suite runner (B0-B4)
+│   ├── run_multi_seed.sh      # Multi-seed replication pipeline (Seeds: 42, 2026, 999)
+│   ├── run_integrated_suite.sh# Full integrated evaluation suite
+│   └── archive/               # Secondary analysis and plotting scripts
+├── docs/                      # Theoretical documentation and LaTeX formalizations
+├── plots/                     # High-resolution academic figures (PNG, SVG, PDF)
 ├── requirements.txt           # Dependency specifications
 └── LICENSE                    # MIT License
 ```

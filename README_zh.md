@@ -155,7 +155,7 @@ python data_gen_multi.py
 python train_sft.py --model-name Qwen/Qwen2.5-0.5B-Instruct --output-dir saved_models/sft_final
 ```
 
-### 3. 训练与消融实验
+### 3. 训练与自动化流水线
 
 ```bash
 # 运行 Vanilla GRPO (B0)
@@ -164,18 +164,30 @@ python train_grpo.py --ablation B0 --group-size 8 --max-steps 200
 # 运行 Full LAGRPO (B4)
 python train_grpo.py --ablation B4 --group-size 8 --max-steps 200
 
-# 运行全量自动化消融流水线 (B0 至 B4)
-python run_paper_ablations.py --max-steps 200 --group-size 32
+# 执行论文全量自动化消融流水线 (B0 至 B4)
+python scripts/run_paper_ablations.py --max-steps 200 --group-size 32
 ```
 
-### 4. 评估与绘图
+### 4. 多随机种子复现流水线 (统计显著性验证)
+
+复现 NeurIPS/ICLR 级包含置信区间带的多随机种子实验：
+
+```bash
+# 自动化多种子复现流水线 (Seeds: 42, 2026, 999)
+bash scripts/run_multi_seed.sh
+
+# 运行完整综合评估套件
+bash scripts/run_integrated_suite.sh
+```
+
+### 5. 评估与可视化
 
 ```bash
 # 在测试集上评估已训练检查点
 python evaluate.py --models saved_models/ablations/grpo_b4_G32_final
 
-# 生成论文图表
-python generate_lagrpo_plots.py
+# 生成高分辨率学术统计图表 (在 plots/ 中)
+python scripts/archive/generate_lagrpo_plots.py
 ```
 
 ---
@@ -190,10 +202,14 @@ python generate_lagrpo_plots.py
 ├── env.py                     # 任务环境与 AST 过程校验沙盒
 ├── model_utils.py             # 模型加载与 LoRA 配置
 ├── evaluate.py                # 测试集评估脚本
-├── run_paper_ablations.py     # 自动化消融流水线运行器 (B0-B4)
-├── analyze_LAGRPO.py          # 统计检验与假设分析脚本
 ├── data_gen_multi.py          # 多难度数据集生成器
-├── plots/                     # 论文图表与可视化输出
+├── scripts/                   # 自动化流水线与多种子复现脚本
+│   ├── run_paper_ablations.py # 消融实验流水线 (B0-B4)
+│   ├── run_multi_seed.sh      # 多随机种子自动化复现流水线 (Seeds: 42, 2026, 999)
+│   ├── run_integrated_suite.sh# 综合评估套件
+│   └── archive/               # 辅助分析与作图脚本
+├── docs/                      # 理论推导与 LaTeX 论文源码
+├── plots/                     # 高分辨率学术图表 (PNG, SVG, PDF)
 ├── requirements.txt           # 依赖配置文件
 └── LICENSE                    # MIT 许可证
 ```
