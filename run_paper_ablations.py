@@ -168,8 +168,12 @@ def main():
     if not run_cmd(py, eval_cmd, REPO_ROOT):
         sys.exit(1)
 
-    if not run_cmd(py, ["analyze_ablation.py", "--log-dir", args.log_dir, "--train-out", args.train_out], REPO_ROOT):
-        sys.exit(1)
+    analyze_script = REPO_ROOT / "scripts" / "archive" / "analyze_ablation.py"
+    if not analyze_script.exists():
+        analyze_script = REPO_ROOT / "analyze_ablation.py"
+    if analyze_script.exists():
+        if not run_cmd(py, [str(analyze_script), "--log-dir", args.log_dir, "--train-out", args.train_out], REPO_ROOT):
+            sys.exit(1)
 
     print("\n[OK] 消融 + 评估 + 分析 全部完成。")
     print(f"   指标 CSV: {args.log_dir}/grpo_*_metrics.csv")
